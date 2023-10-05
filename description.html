@@ -102,16 +102,16 @@
                                 <legend></legend>
                                 <pre>
 function findIntersections(segments):
-    events = InitializeEventsList(segments)  // Create a list of events (start and end points of segments)
-    status = InitializeStatusStructure()      // Create a balanced binary search tree (e.g., AVL tree)
+    events = InitializeEventsList(segments) // Create a list of events (start and end points of segments)
+    status = InitializeStatusStructure()    // Create a balanced binary search tree (e.g., AVL tree)
 
-    SortEventsByXCoordinate(events)           // Sort events by their x-coordinates
+    SortEventsByXCoordinate(events)         // Sort events by their x-coordinates
 
-    intersections = []                        // Initialize an empty list to store intersections
+    intersections = []                      // Initialize an empty list to store intersections
 
     for each event in events:
         if event.type is 'start':
-            status.Insert(event.segment)       // Insert the segment into the status structure
+            status.Insert(event.segment)        // Insert the segment into the status structure
             above = status.Above(event.segment) // Get the segment directly above the current segment
             below = status.Below(event.segment) // Get the segment directly below the current segment
 
