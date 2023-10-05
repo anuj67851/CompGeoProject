@@ -30,6 +30,10 @@
     .tim-container a {
         color: #00bbff;
     }
+
+    th, td {
+        text-align: center;
+    }
 </style>
 <body>
 
@@ -56,6 +60,13 @@
                     <div class="col-md-8 col-md-offset-1">
                         <div class="tim-container">
                             <div class="tim-row">
+                                <h2>Note</h2>
+                                <legend></legend>
+                                <ul type="disc">
+                                    <li>This Project was made as a part of course work for CSCI 716 - Computational Geometry Course.</li>
+                                </ul>
+                            </div>
+                            <div class="tim-row">
                                 <h2>Introduction</h2>
                                 <legend></legend>
                                 <ul type="disc">
@@ -65,7 +76,6 @@
 
                                 </ul>
                             </div>
-
                             <div class="tim-row">
                                 <h2>Problem</h2>
                                 <legend></legend>
@@ -78,54 +88,106 @@
 
                                 </ul>
                             </div>
-
-
-
                             <div class="tim-row">
                                 <h2>Algorithm</h2>
                                 <legend></legend>
-                                <ul type="disc">
-                                    <li>Convert the corpus into sentence using sent_tokenize</li>
-                                    <li>Convert the sentences into words using word_tokenize</li>
-                                    <li>Maintain the dictionary of frequency of all words</li>
-                                    <li>Calculate the score of first 5 percentage of sentence in corpus</li>
-                                    <li>Sort those sentences in descending order</li>
-                                    <li>To get a multi-line title : if the difference between first and second sentence is less than some difference
-                                     or if the count of last word in first sentence and first word of second sentence is greater than a specific
-                                    limit</li>
-                                </ul>
-                            </div>
+                                <pre>
+function findIntersections(segments):
+    events = InitializeEventsList(segments)  // Create a list of events (start and end points of segments)
+    status = InitializeStatusStructure()      // Create a balanced binary search tree (e.g., AVL tree)
 
+    SortEventsByXCoordinate(events)           // Sort events by their x-coordinates
+
+    intersections = []                        // Initialize an empty list to store intersections
+
+    for each event in events:
+        if event.type is 'start':
+            status.Insert(event.segment)       // Insert the segment into the status structure
+            above = status.Above(event.segment) // Get the segment directly above the current segment
+            below = status.Below(event.segment) // Get the segment directly below the current segment
+
+            if above is not null and Intersects(event.segment, above):
+                intersections.Append((event.segment, above)) // Store the intersection
+
+            if below is not null and Intersects(event.segment, below):
+                intersections.Append((event.segment, below)) // Store the intersection
+
+        else if event.type is 'end':
+            above = status.Above(event.segment) // Get the segment directly above the current segment
+            below = status.Below(event.segment) // Get the segment directly below the current segment
+
+            if above is not null and below is not null and Intersects(above, below):
+                intersections.Append((above, below)) // Store the intersection
+
+            status.Remove(event.segment) // Remove the segment from the status structure
+
+    return intersections
+</pre>
+                            </div>
                             <div class="tim-row">
                                 <h2>Timeline</h2>
-                                <legend></legend>
-                                <ul  type="disc">
-                                    <li>Taking 20 percent of data as corpus and using spacy we can get a basic idea of all the proper names in
-                                        corpus</li>
-                                    <li>Spacy provides 3 types of dataset : en_core_web_sm,en_core_web_md,en_core_web_lg</li>
-                                    <li>Using name_entity function user can get idea of all the proper names in corpus</li>
-                                </ul>
-                                </ul>
+                                <table class="table table-hover table-bordered" style="width: 100%;">
+                                    <tr>
+                                        <th style="width: 20%">Week No</th>
+                                        <th style="width: 80%;">Goals</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 4</td>
+                                        <td>Finalizing the Project Definition & Researching Technologies available</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 5</td>
+                                        <td>Setting up development environment, hosting application and getting hands dirty with required technologies</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 6</td>
+                                        <td>Implementing Base Algorithm and Data Structures</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 7</td>
+                                        <td>Adding Static visualization of algorithm using <a href="https://www.chartjs.org/" target="_blank">ChartJS</a> Library</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 8</td>
+                                        <td>Animate the graph visualization as algorithm runs (Make it look cleaner & nice)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 9</td>
+                                        <td>Add a Pseudocode section that highlights the currently executing line of algorithm</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 10</td>
+                                        <td>Provide step, resume and pause buttons for code execution</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 11</td>
+                                        <td>Add Random Initialization button as well as Manual initialization by clicking on empty graph</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 12</td>
+                                        <td>Add visualization for current state of Data Structures used</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 13</td>
+                                        <td>Code cleanup, fixing known bugs and wrapping up</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Week 14</td>
+                                        <td>Preparing for Final presentation and Demo</td>
+                                    </tr>
+                                </table>
                             </div>
-
                             <div class="tim-row">
                                 <h2>References</h2>
                                 <legend></legend>
                                 <ul>
-                                    <li>Find all the occurrence of word "References"</li>
-                                    <li>Make a dummy data of approx 40 lines for each occurrence of word "reference"</li>
-                                    <li>Count number of proper names in each dummy data</li>
-                                    <li>One having maximum amount proper names will be selected as index of reference</li>
-                                </ul>
-                            </div>
-                            <div class="tim-row">
-                                <h2>Stretch Goals</h2>
-                                <legend></legend>
-                                <ul>
-                                    <li>Find all the occurrence of word "References"</li>
-                                    <li>Make a dummy data of approx 40 lines for each occurrence of word "reference"</li>
-                                    <li>Count number of proper names in each dummy data</li>
-                                    <li>One having maximum amount proper names will be selected as index of reference</li>
+                                    <li>CSCI 716 - Week 4 Lecture Slides</li>
+                                    <li><a href="https://saturncloud.io/blog/simple-efficient-algorithm-for-finding-intersections-between-line-segments/" target="_blank">
+                                        Line Segment Intersection Blogpost
+                                    </a></li>
+                                    <li><a href="https://youtube.com/playlist?list=PLubYOWSl9mItBLmB2WiFU0A_WINUSLtGH&feature=shared" target="_blank">
+                                        Line Intersection problem - Philipp Kindermann (YouTube)
+                                    </a></li>
                                 </ul>
                             </div>
                         </div>
