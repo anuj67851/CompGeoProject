@@ -50,22 +50,37 @@ function drawPoint(point) {
   ctx.closePath();
 }
 
-function drawSweepLine(x) {
-  clearCanvas();
-  drawLines();
-  intersections.forEach(drawPoint);
+function drawSweepLine(oldPriority, newPriority) {
+  return new Promise((resolve) => {
+    const speed = 1; // Pixels per frame
+    function animate() {
+      clearCanvas();
+      drawLines();
+      intersections.forEach(drawPoint);
 
-  const p1 = new Point(x, rect.top);
-  const p2 = new Point(x, rect.bottom);
-  const line = new LineSegment(p1, p2);
+      // Draw the vertical line
+      ctx.setLineDash([5, 15]);
+      ctx.beginPath();
+      ctx.moveTo(oldPriority, 0);
+      ctx.lineTo(oldPriority, rect.bottom);
+      ctx.strokeStyle = "black";
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-  ctx.setLineDash([5, 15]);
-  ctx.beginPath();
-  ctx.moveTo(line.start.x, line.start.y);
-  ctx.lineTo(line.end.x, line.end.y);
-  ctx.strokeStyle = 'black';
-  ctx.stroke();
-  ctx.setLineDash([]);
+      // Update the position of the line
+      oldPriority += speed;
+      if (oldPriority >= newPriority) {
+        resolve(); // Resolve the promise when the animation is complete
+        return;
+      }
+
+      // Request the next frame
+      requestAnimationFrame(animate);
+    }
+
+    // Start the animation
+    animate();
+  });
 }
 
 function drawLines() {
@@ -248,7 +263,7 @@ function sortStatus(currentX) {
 
 function deleteLine(line) {
   // Filter out the line from the status queue
-  status.filter(([_, l]) => line !== l);
+  status = status.filter(([_, l]) => !compareLines(line, l));
 }
 
 function findLine(line) {
@@ -325,13 +340,13 @@ async function runAlgorithm() {
     }, line.end.x)
   }
 
+  let currentPriority = 0;
   while (!eventQueue.isEmpty()) {
-    await sleep(500);
     const thisEvent = eventQueue.dequeue();
     const {element, priority} = thisEvent;
     const {point, line, event} = element;
-    console.log(priority);
-    drawSweepLine(point.x);
+    await drawSweepLine(parseFloat(currentPriority), parseFloat(point.x));
+    currentPriority = point.x;
     if (event === "start") {
       addLineToStatus(line, point.x);
       const idx = findLine(line);
@@ -354,7 +369,7 @@ async function runAlgorithm() {
       if (idx < (status.length - 1)) {
         const lineAfter = status[idx + 1][1];
         const intersectPoint = intersect(line, lineAfter)
-        if (intersectPoint) {
+        if (intersectPoint && intersectPoint.x > priority) {
           eventQueue.enqueue({
             point: intersectPoint,
             line: [line, lineAfter],
@@ -374,63 +389,50 @@ async function runAlgorithm() {
             line: [lineBefore, lineAfter],
             event: "intersection"
           }, intersectPoint.x)
-          if (intersectPoint.x < priority) {
-            console.log("In end")
-          }
         }
       }
       deleteLine(line)
     } else {
-      if (!checkPointInIntersection(point)) {
-        drawPoint(point);
-        intersections.add(point);
-        const [line1, line2] = line;
-        const lower = findLine(line1);
-        const higher = findLine(line2);
+      intersections.add(point);
+      const [line1, line2] = line;
+      const lower = findLine(line1);
+      const higher = findLine(line2);
 
-        // check old events
-        if (lower > 0) {
-          const lineBeforeLower = status[lower - 1][1];
-          const lineLower = status[lower][1];
-          removeEvents(lineBeforeLower, lineLower);
+      // check old events
+      if (lower > 0) {
+        const lineBeforeLower = status[lower - 1][1];
+        const lineLower = status[lower][1];
+        removeEvents(lineBeforeLower, lineLower);
+      }
+      if (higher < (status.length - 1)) {
+        const lineAfterHigher = status[higher + 1][1];
+        const lineHigher = status[higher][1];
+        removeEvents(lineHigher, lineAfterHigher);
+      }
+      swap(lower, higher);
+      if (lower > 0) {
+        const line = status [lower][1];
+        const lineLower = status[lower - 1][1];
+        const intersectPoint = intersect(lineLower, line);
+        if (intersectPoint && intersectPoint.x > priority) {
+          eventQueue.enqueue({
+            point: intersectPoint,
+            line: [lineLower, line],
+            event: "intersection"
+          }, intersectPoint.x)
         }
-        if (higher < (status.length - 1)) {
-          const lineAfterHigher = status[higher + 1][1];
-          const lineHigher = status[higher][1];
-          removeEvents(lineHigher, lineAfterHigher);
+      }
+      if (higher < (status.length - 1)) {
+        const line = status [higher][1];
+        const lineAbove = status[higher + 1][1];
+        const intersectPoint = intersect(line, lineAbove);
+        if (intersectPoint && intersectPoint.x > priority) {
+          eventQueue.enqueue({
+            point: intersectPoint,
+            line: [line, lineAbove],
+            event: "intersection"
+          }, intersectPoint.x)
         }
-        swap(lower, higher);
-        if (lower > 0) {
-          const line = status [lower][1];
-          const lineLower = status[lower - 1][1];
-          const intersectPoint = intersect(lineLower, line);
-          if (intersectPoint && intersectPoint.x > priority) {
-            eventQueue.enqueue({
-              point: intersectPoint,
-              line: [lineLower, line],
-              event: "intersection"
-            }, intersectPoint.x)
-            if (intersectPoint.x < priority) {
-              console.log("In intersect")
-            }
-          }
-        }
-        if (higher < (status.length - 1)) {
-          const line = status [higher][1];
-          const lineAbove = status[higher + 1][1];
-          const intersectPoint = intersect(line, lineAbove);
-          if (intersectPoint && intersectPoint.x > priority) {
-            eventQueue.enqueue({
-              point: intersectPoint,
-              line: [line, lineAbove],
-              event: "intersection"
-            }, intersectPoint.x)
-            if (intersectPoint.x < priority) {
-              console.log("In intersect")
-            }
-          }
-        }
-
       }
     }
   }

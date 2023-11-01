@@ -102,37 +102,34 @@
                                 <h2>Algorithm</h2>
                                 <legend></legend>
                                 <pre>
-function findIntersections(segments):
-    events = InitializeEventsList(segments) // Create a list of events (start and end points of segments)
-    status = InitializeStatusStructure()    // Create a balanced binary search tree (e.g., AVL tree)
+Initialize an empty priority queue Q for future events, prioritized by x-coordinate of the event.
+Initialize an empty status list, which keeps line segments ordered by the value of Y-coordinate for current value of X.
 
-    SortEventsByXCoordinate(events)         // Sort events by their x-coordinates
+For each input line segment:
+    Create and add two events to Q:
+        - One for the left endpoint (x-coordinate as the key) to insert the segment into T.
+        - One for the right endpoint (x-coordinate as the key) to remove the segment from T.
 
-    intersections = []                      // Initialize an empty list to store intersections
+While Q is not empty:
+    Get the event with the smallest x-coordinate - max priority (let's call it p) from Q.
 
-    for each event in events:
-        if event.type is 'start':
-            status.Insert(event.segment)        // Insert the segment into the status structure
-            above = status.Above(event.segment) // Get the segment directly above the current segment
-            below = status.Below(event.segment) // Get the segment directly below the current segment
+    If p is a left endpoint of a line segment s:
+        Insert s into T.
+        Find segments r and t that are immediately above and below s in T.
+        If r and t cross, remove any possible future events related to their intersection.
+        If s intersects r or t, add those intersection points as potential future events in Q.
 
-            if above is not null and Intersects(event.segment, above):
-                intersections.Append((event.segment, above)) // Store the intersection
+    Else If p is a right endpoint of a line segment s:
+        Remove s from T.
+        Find segments r and t that were immediately above and below s in T before its removal.
+        If r and t intersect, add that intersection point as a potential future event in Q.
 
-            if below is not null and Intersects(event.segment, below):
-                intersections.Append((event.segment, below)) // Store the intersection
-
-        else if event.type is 'end':
-            above = status.Above(event.segment) // Get the segment directly above the current segment
-            below = status.Below(event.segment) // Get the segment directly below the current segment
-
-            if above is not null and below is not null and Intersects(above, below):
-                intersections.Append((above, below)) // Store the intersection
-
-            status.Remove(event.segment) // Remove the segment from the status structure
-
-    return intersections
-</pre>
+    Else If p is the intersection point of two segments s and t:
+        Swap the positions of s and t in T.
+        After the swap, find the segments r and u that are immediately below and above t and s, respectively.
+        Remove any possible future events related to rs and tu from Q.
+        If r and t intersect or s and u intersect, add those intersection points to Q.
+        </pre>
                             </div>
                             <div class="tim-row">
                                 <h2>Timeline</h2>
