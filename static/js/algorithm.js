@@ -52,6 +52,9 @@ class Point {
     this.x = x;
     this.y = y;
   }
+  toString() {
+    return `(${this.x}, ${this.y})`;
+  }
 }
 
 class LineSegment {
@@ -368,6 +371,11 @@ function removeEvents(lineBefore, lineAfter) {
   }
 }
 
+function writeIntersections() {
+  const element = document.getElementById("result");
+  element.innerText = Array.from(intersections).join(' ');
+}
+
 async function runAlgorithm() {
   restartAlgoClear();
   drawLines();
@@ -458,6 +466,7 @@ async function runAlgorithm() {
     } else {
       await switchActiveLine("if-intersect");
       intersections.add(point);
+      writeIntersections();
       const [line1, line2] = line;
       const lower = findLine(line1);
       const higher = findLine(line2);
@@ -505,7 +514,6 @@ async function runAlgorithm() {
     }
   }
   await switchActiveLine("");
-  console.log(intersections);
 }
 
 
