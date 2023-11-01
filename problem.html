@@ -23,6 +23,10 @@
         pre {
             height: 100%;
         }
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -30,33 +34,33 @@
 <div class="wrapper" style="margin-top: 20px">
     <div class="col-md-7" style="height: 600px;">
         <pre>
-Initialize an empty priority queue Q for future events, prioritized by x-coordinate of the event.
-Initialize an empty status list, which keeps line segments ordered by the value of Y-coordinate for current value of X.
+<span id="initialize-event">Initialize an empty priority queue Q for future events, prioritized by x-coordinate of the event.</span>
+<span id="initialize-status">Initialize an empty status list, which keeps line segments ordered by the value of Y-coordinate for the current value of X.</span>
 
-For each input line segment:
-    Create and add two events to Q:
-        - One for the left endpoint (x-coordinate as the key) to insert the segment into T.
-        - One for the right endpoint (x-coordinate as the key) to remove the segment from T.
+<span id="loop-start">For each input line segment:</span>
+<span id="loop-create">  Create and add two events to Q:</span>
+<span id="add-start">    - One for the left endpoint (x-coordinate as the key) to insert the segment into T.</span>
+<span id="add-end">    - One for the right endpoint (x-coordinate as the key) to remove the segment from T.</span>
 
-While Q is not empty:
-    Get the event with the smallest x-coordinate - max priority (let's call it p) from Q.
+<span id="main-loop">While Q is not empty:</span>
+<span id="get-event">  Get the event with the smallest x-coordinate - max priority (let's call it p) from Q.</span>
 
-    If p is a left endpoint of a line segment s:
-        Insert s into T.
-        Find segments r and t that are immediately above and below s in T.
-        If r and t cross, remove any possible future events related to their intersection.
-        If s intersects r or t, add those intersection points as potential future events in Q.
+<span id="if-start">  If p is a left endpoint of a line segment s:</span>
+<span id="insert-line">    Insert s into T.</span>
+<span id="find-above-below">    Find segments r and t that are immediately above and below s in T.</span>
+<span id="remove-ab-event">    If r and t cross, remove any possible future events related to their intersection.</span>
+<span id="start-new-event">    If s intersects r or t, add those intersection points as potential future events in Q.</span>
 
-    Else If p is a right endpoint of a line segment s:
-        Remove s from T.
-        Find segments r and t that were immediately above and below s in T before its removal.
-        If r and t intersect, add that intersection point as a potential future event in Q.
+<span id="if-end">  Else If p is a right endpoint of a line segment s:</span>
+<span id="find-ab">    Find segments r and t that were immediately above and below s in T before its removal.</span>
+<span id="end-new-event">    If r and t intersect, add that intersection point as a potential future event in Q if we haven't visited it already.</span>
+<span id="remove-line">    Remove s from T.</span>
 
-    Else If p is the intersection point of two segments s and t:
-        Swap the positions of s and t in T.
-        After the swap, find the segments r and u that are immediately below and above t and s, respectively.
-        Remove any possible future events related to rs and tu from Q.
-        If r and t intersect or s and u intersect, add those intersection points to Q.
+<span id="if-intersect">  Else If p is the intersection point of two segments s and t:</span>
+<span id="swap">    Swap the positions of s and t in T.</span>
+<span id="find-ab-intersect">    After the swap, find the segments r and u that are immediately below and above t and s, respectively.</span>
+<span id="remove-ab-intersect">    Remove any possible future events related to rs and tu from Q.</span>
+<span id="intersect-new-event">    If r and t intersect or s and u intersect, add those intersection points to Q if we haven't visited them already.</span>
         </pre>
     </div>
     <div class="col-md-5" style="height: 600px;">

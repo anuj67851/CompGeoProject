@@ -1,3 +1,49 @@
+let currentlyActiveLine = "";
+let isAnimating = false;
+
+async function switchActiveLine(next) {
+  if (isAnimating) {
+    return; // Wait for the previous animation to finish
+  }
+  isAnimating = true;
+
+  function removeClass() {
+    return new Promise((resolve) => {
+      if (currentlyActiveLine !== "") {
+        requestAnimationFrame(() => {
+          const element = document.getElementById(currentlyActiveLine);
+          element.classList.remove('highlight');
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  function addClass() {
+    return new Promise((resolve) => {
+      if (next !== "") {
+        requestAnimationFrame(() => {
+          const element = document.getElementById(next);
+          element.classList.add('highlight');
+          currentlyActiveLine = next;
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  async function animate() {
+    await removeClass();
+    await addClass();
+    isAnimating = false;
+  }
+  await animate();
+}
+
 class Point {
   x;
   y;
@@ -326,13 +372,19 @@ async function runAlgorithm() {
   restartAlgoClear();
   drawLines();
 
+  await switchActiveLine("initialize-event");
+  await switchActiveLine("initialize-status");
+  await switchActiveLine("loop-start");
   for (let line of lines) {
+    await switchActiveLine("loop-create");
+    await switchActiveLine("add-start");
     eventQueue.enqueue({
       point: line.start,
       line: line,
       event: "start",
     }, line.start.x)
 
+    await switchActiveLine("add-end");
     eventQueue.enqueue({
       point: line.end,
       line: line,
@@ -341,20 +393,27 @@ async function runAlgorithm() {
   }
 
   let currentPriority = 0;
+  await switchActiveLine("main-loop");
   while (!eventQueue.isEmpty()) {
+    await switchActiveLine("get-event");
     const thisEvent = eventQueue.dequeue();
     const {element, priority} = thisEvent;
     const {point, line, event} = element;
     await drawSweepLine(parseFloat(currentPriority), parseFloat(point.x));
     currentPriority = point.x;
     if (event === "start") {
-      addLineToStatus(line, point.x);
+      await switchActiveLine("if-start");
+      await switchActiveLine("insert-line");
+      await addLineToStatus(line, point.x);
       const idx = findLine(line);
       if (idx > 0 && idx < (status.length - 1)) {
+        await switchActiveLine("find-above-below");
         const lineBefore = status[idx - 1][1];
         const lineAfter = status[idx + 1][1];
+        await switchActiveLine("remove-ab-event");
         removeEvents(lineBefore, lineAfter);
       }
+      await switchActiveLine("start-new-event");
       if (idx > 0) {
         const lineBefore = status[idx - 1][1];
         const intersectPoint = intersect(line, lineBefore)
@@ -378,12 +437,15 @@ async function runAlgorithm() {
         }
       }
     } else if (event === "end") {
+      await switchActiveLine("if-end");
       const idx = findLine(line);
       if (idx > 0 && idx < (status.length - 1)) {
+        await switchActiveLine("find-ab");
         const lineBefore = status[idx - 1][1];
         const lineAfter = status[idx + 1][1];
         const intersectPoint = intersect(lineBefore, lineAfter);
         if (intersectPoint && intersectPoint.x > priority) {
+          await switchActiveLine("end-new-event");
           eventQueue.enqueue({
             point: intersectPoint,
             line: [lineBefore, lineAfter],
@@ -391,13 +453,18 @@ async function runAlgorithm() {
           }, intersectPoint.x)
         }
       }
+      await switchActiveLine("remove-line");
       deleteLine(line)
     } else {
+      await switchActiveLine("if-intersect");
       intersections.add(point);
       const [line1, line2] = line;
       const lower = findLine(line1);
       const higher = findLine(line2);
 
+      await switchActiveLine("swap");
+      await switchActiveLine("find-ab-intersect");
+      await switchActiveLine("remove-ab-intersect")
       // check old events
       if (lower > 0) {
         const lineBeforeLower = status[lower - 1][1];
@@ -410,6 +477,7 @@ async function runAlgorithm() {
         removeEvents(lineHigher, lineAfterHigher);
       }
       swap(lower, higher);
+      await switchActiveLine("intersect-new-event");
       if (lower > 0) {
         const line = status [lower][1];
         const lineLower = status[lower - 1][1];
@@ -436,6 +504,7 @@ async function runAlgorithm() {
       }
     }
   }
+  await switchActiveLine("");
   console.log(intersections);
 }
 

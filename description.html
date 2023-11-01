@@ -120,15 +120,15 @@ While Q is not empty:
         If s intersects r or t, add those intersection points as potential future events in Q.
 
     Else If p is a right endpoint of a line segment s:
-        Remove s from T.
         Find segments r and t that were immediately above and below s in T before its removal.
-        If r and t intersect, add that intersection point as a potential future event in Q.
+        If r and t intersect, add that intersection point as a potential future event in Q if we haven't visited it already.
+        Remove s from T.
 
     Else If p is the intersection point of two segments s and t:
         Swap the positions of s and t in T.
         After the swap, find the segments r and u that are immediately below and above t and s, respectively.
         Remove any possible future events related to rs and tu from Q.
-        If r and t intersect or s and u intersect, add those intersection points to Q.
+        If r and t intersect or s and u intersect, add those intersection points to Q if we haven't visited it already.
         </pre>
                             </div>
                             <div class="tim-row">
