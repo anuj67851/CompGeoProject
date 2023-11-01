@@ -319,7 +319,6 @@ async function runAlgorithm() {
           }, intersectPoint.x)
         }
       }
-
       if (idx < (status.length - 1)) {
         const lineAfter = status[idx + 1][1];
         const intersectPoint = intersect(line, lineAfter)
