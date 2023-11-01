@@ -1,3 +1,5 @@
+const runButton = document.getElementById("run-button");
+const clearButton = document.getElementById("clear-button");
 let currentlyActiveLine = "";
 let isAnimating = false;
 
@@ -165,10 +167,12 @@ function stopDragLine(e) {
     } else {
       lines.push(new LineSegment(p2, p1));
     }
+    runButton.disabled = false;
   }
   clearInterval(intervalLoop);
   clearCanvas();
   drawLines();
+  intersections.forEach(drawPoint);
 }
 
 function isMouseWithinCanvas(e) {
@@ -202,6 +206,7 @@ function init() {
 }
 
 function clearData() {
+  runButton.disabled = true;
   lines = [];
   restartAlgoClear();
 }
@@ -210,6 +215,7 @@ function restartAlgoClear() {
   intersections = new Set();
   eventQueue = new PriorityQueue();
   status = [];
+  writeIntersections();
   clearCanvas();
 }
 
@@ -377,6 +383,9 @@ function writeIntersections() {
 }
 
 async function runAlgorithm() {
+  runButton.disabled = true;
+  clearButton.disabled = true;
+
   restartAlgoClear();
   drawLines();
 
@@ -514,6 +523,8 @@ async function runAlgorithm() {
     }
   }
   await switchActiveLine("");
+  runButton.disabled = true;
+  clearButton.disabled = false;
 }
 
 
