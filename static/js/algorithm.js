@@ -18,7 +18,6 @@ class LineSegment {
   }
 }
 
-intersections = [];
 let cursorX;
 let cursorY;
 const canvas = document.getElementById("canvas"); //canvas, context, other vars etc
@@ -56,8 +55,14 @@ function startDragLine() {
 
 function stopDragLine(e) {
   if (isMouseWithinCanvas(e)) {
-    lines.push(new LineSegment(new Point(firstClick[0], firstClick[1]),
-        new Point(cursorX, cursorY)));
+    const p1 = new Point(firstClick[0], firstClick[1]);
+    const p2 = new Point(cursorX, cursorY);
+
+    if (p1.x < p2.x) {
+      lines.push(new LineSegment(p1, p2));
+    } else {
+      lines.push(new LineSegment(p2, p1));
+    }
   }
   clearInterval(intervalLoop);
   clearCanvas();
@@ -94,42 +99,91 @@ function init() {
   window.addEventListener('mouseup', stopDragLine, false);
 }
 
-init();
-
+function clearLines() {
+  lines = [];
+  clearCanvas();
+}
 // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
 // Determine the intersection point of two line segments
 // Return FALSE if the lines don't intersect
 function intersect(l1, l2) {
-  let x1 = l1.start.x
-  let y1 = l1.start.y
+  let x1 = l1.start.x;
+  let y1 = l1.start.y;
 
-  let x2 = l1.end.x
-  let y2 = l1.end.y
+  let x2 = l1.end.x;
+  let y2 = l1.end.y;
 
-  let x3 = l2.start.x
-  let y3 = l2.start.y
+  let x3 = l2.start.x;
+  let y3 = l2.start.y;
 
-  let x4 = l2.end.x
-  let y4 = l2.end.y
+  let x4 = l2.end.x;
+  let y4 = l2.end.y;
   // Check if none of the lines are of length 0
   if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
-    return false
+    return false;
   }
-  let denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1))
+  let denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
   // Lines are parallel
   if (denominator === 0) {
-    return false
+    return false;
   }
-  let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator
-  let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator
+  let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator;
+  let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator;
   // is the intersection along the segments
   if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
-    return false
+    return false;
   }
   // Return a object with the x and y coordinates of the intersection
-  let x = x1 + ua * (x2 - x1)
-  let y = y1 + ua * (y2 - y1)
-  return new Point(x, y)
+  let x = x1 + ua * (x2 - x1);
+  let y = y1 + ua * (y2 - y1);
+  return new Point(x, y);
+}
+
+window.onload = function() {
+  init();
+};
+
+class PriorityQueue {
+  constructor() {
+    this.elements = [];
+  }
+
+  enqueue(element, priority) {
+    this.elements.push({ element, priority });
+    this.elements.sort((a, b) => a.priority - b.priority);
+  }
+
+  dequeue() {
+    if (this.isEmpty()) {
+      return null;
+    }
+    return this.elements.shift().element;
+  }
+
+  isEmpty() {
+    return this.elements.length === 0;
+  }
+}
+
+
+let eventQueue = new PriorityQueue();
+let intersections = [];
+function runAlgorithm() {
+  for (let line of lines) {
+    eventQueue.enqueue({
+      point: line.start,
+      line: line,
+      event: "start",
+    }, line.start.x)
+
+    eventQueue.enqueue({
+      point: line.end,
+      line: line,
+      event: "end",
+    }, line.end.x)
+  }
+
+  console.log(eventQueue);
 }
 
 
