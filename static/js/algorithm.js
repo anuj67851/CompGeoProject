@@ -523,7 +523,7 @@ async function runAlgorithm() {
     }
   }
   await switchActiveLine("");
-  runButton.disabled = true;
+  runButton.disabled = false;
   clearButton.disabled = false;
 }
 
