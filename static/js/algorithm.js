@@ -143,36 +143,39 @@ function clearCanvas() {
 }
 
 function startDragLine() {
-  firstClick = [cursorX, cursorY];
-  //start the loop
-  intervalLoop = setInterval(function () {
-    clearCanvas();
-    // Draw all stored lines
-    drawLines();
-    ctx.beginPath();
-    ctx.moveTo(firstClick[0], firstClick[1]);
-    ctx.lineTo(cursorX, cursorY);
-    ctx.strokeStyle = 'blue';
-    ctx.stroke();
-  }, 10);
+  if (!clearButton.disabled) {
+    firstClick = [cursorX, cursorY];
+    //start the loop
+    intervalLoop = setInterval(function () {
+      clearCanvas();
+      // Draw all stored lines
+      drawLines();
+      ctx.beginPath();
+      ctx.moveTo(firstClick[0], firstClick[1]);
+      ctx.lineTo(cursorX, cursorY);
+      ctx.strokeStyle = 'blue';
+      ctx.stroke();
+    }, 10);
+  }
 }
 
 function stopDragLine(e) {
-  if (isMouseWithinCanvas(e)) {
-    const p1 = new Point(firstClick[0], firstClick[1]);
-    const p2 = new Point(cursorX, cursorY);
+  if (!clearButton.disabled) {
+    if (isMouseWithinCanvas(e)) {
+      const p1 = new Point(firstClick[0], firstClick[1]);
+      const p2 = new Point(cursorX, cursorY);
 
-    if (p1.x < p2.x) {
-      lines.push(new LineSegment(p1, p2));
-    } else {
-      lines.push(new LineSegment(p2, p1));
+      if (p1.x < p2.x) {
+        lines.push(new LineSegment(p1, p2));
+      } else {
+        lines.push(new LineSegment(p2, p1));
+      }
+      runButton.disabled = false;
     }
-    runButton.disabled = false;
+    clearInterval(intervalLoop);
+    clearCanvas();
+    drawLines();
   }
-  clearInterval(intervalLoop);
-  clearCanvas();
-  drawLines();
-  intersections.forEach(drawPoint);
 }
 
 function isMouseWithinCanvas(e) {
@@ -195,6 +198,7 @@ function fitToContainer(canvas) {
 }
 
 function init() {
+  runButton.disabled = true;
   fitToContainer(canvas);
   rect = canvas.getBoundingClientRect();
   document.onmousemove = function (e) {
