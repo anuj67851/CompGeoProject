@@ -2,6 +2,7 @@ const runButton = document.getElementById("run-button");
 const clearButton = document.getElementById("clear-button");
 let currentlyActiveLine = "";
 let isAnimating = false;
+let currentEventPoint = null;
 
 async function switchActiveLine(next) {
   if (isAnimating) {
@@ -121,6 +122,17 @@ function drawSweepLine(oldPriority, newPriority) {
       // Update the position of the line
       oldPriority += speed;
       if (oldPriority >= newPriority) {
+        if (currentEventPoint !== null) {
+          const pointSize = 3;
+          const pointColor = "green";
+
+          // Draw the point
+          ctx.beginPath();
+          ctx.arc(currentEventPoint.x, currentEventPoint.y, pointSize, 0, 2 * Math.PI);
+          ctx.fillStyle = pointColor;
+          ctx.fill();
+          ctx.closePath();
+        }
         resolve(); // Resolve the promise when the animation is complete
         return;
       }
@@ -420,6 +432,7 @@ async function runAlgorithm() {
     const thisEvent = eventQueue.dequeue();
     const {element, priority} = thisEvent;
     const {point, line, event} = element;
+    currentEventPoint = point;
     await drawSweepLine(parseFloat(currentPriority), parseFloat(point.x));
     currentPriority = point.x;
     if (event === "start") {
