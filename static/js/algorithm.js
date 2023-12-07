@@ -1,15 +1,19 @@
 const runButton = document.getElementById("run-button");
 const clearButton = document.getElementById("clear-button");
+const pauseButton = document.getElementById("pause-button");
+const resumeButton = document.getElementById("resume-button");
+const stepButton = document.getElementById("step-button");
 let currentlyActiveLine = "";
 let isAnimating = false;
 let currentEventPoint = null;
+const PauseStatus = {
+  PAUSED: 'pause',
+  RESUME: 'resume',
+  STEP: 'step',
+};
+let pauseStatus = PauseStatus.RESUME;
 
 async function switchActiveLine(next) {
-  if (isAnimating) {
-    return; // Wait for the previous animation to finish
-  }
-  isAnimating = true;
-
   function removeClass() {
     return new Promise((resolve) => {
       if (currentlyActiveLine !== "") {
@@ -40,11 +44,51 @@ async function switchActiveLine(next) {
   }
 
   async function animate() {
+    if (isAnimating) {
+      return; // Wait for the previous animation to finish
+    }
+    isAnimating = true;
     await removeClass();
     await addClass();
     isAnimating = false;
   }
-  await animate();
+
+  async function pauseExecution() {
+    while (pauseStatus === PauseStatus.PAUSED) {
+      await sleep(100); // Adjust the sleep duration as needed
+    }
+  }
+
+  if (pauseStatus === PauseStatus.PAUSED) {
+    await pauseExecution();
+    await switchActiveLine(next);
+  } else if (pauseStatus === PauseStatus.RESUME) {
+    await animate();
+  } else {
+    await animate();
+    pauseStatus = PauseStatus.PAUSED;
+  }
+}
+
+function pauseExecution() {
+  pauseStatus = PauseStatus.PAUSED;
+  pauseButton.disabled = true;
+  resumeButton.disabled = false;
+  stepButton.disabled = false;
+}
+
+function resumeExecution() {
+  pauseStatus = PauseStatus.RESUME;
+  pauseButton.disabled = false;
+  stepButton.disabled = true;
+  resumeButton.disabled = true;
+}
+
+function stepExecution() {
+  pauseStatus = PauseStatus.STEP;
+  pauseButton.disabled = true;
+  stepButton.disabled = false;
+  resumeButton.disabled = false;
 }
 
 class Point {
@@ -211,6 +255,9 @@ function fitToContainer(canvas) {
 
 function init() {
   runButton.disabled = true;
+  pauseButton.disabled = true;
+  resumeButton.disabled = true;
+  stepButton.disabled = true;
   fitToContainer(canvas);
   rect = canvas.getBoundingClientRect();
   document.onmousemove = function (e) {
@@ -401,6 +448,9 @@ function writeIntersections() {
 async function runAlgorithm() {
   runButton.disabled = true;
   clearButton.disabled = true;
+  resumeButton.disabled = true;
+  stepButton.disabled = true;
+  pauseButton.disabled = false;
 
   restartAlgoClear();
   drawLines();
@@ -542,6 +592,9 @@ async function runAlgorithm() {
   await switchActiveLine("");
   runButton.disabled = false;
   clearButton.disabled = false;
+  pauseButton.disabled = true;
+  resumeButton.disabled = true;
+  stepButton.disabled = true;
 }
 
 
