@@ -3,6 +3,7 @@ const clearButton = document.getElementById("clear-button");
 const pauseButton = document.getElementById("pause-button");
 const resumeButton = document.getElementById("resume-button");
 const stepButton = document.getElementById("step-button");
+const randomButton = document.getElementById("random-button");
 let currentlyActiveLine = "";
 let isAnimating = false;
 let currentEventPoint = null;
@@ -114,6 +115,16 @@ class LineSegment {
   }
 }
 
+class Intersection {
+  point;
+  color;
+
+  constructor(point, color) {
+    this.point = point;
+    this.color = color;
+  }
+}
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -134,13 +145,13 @@ function drawLine(line) {
   ctx.stroke();
 }
 
-function drawPoint(point) {
+function drawPoint(intersection) {
   const pointSize = 5;
-  const pointColor = "red";
+  const pointColor = intersection.color;
 
   // Draw the point
   ctx.beginPath();
-  ctx.arc(point.x, point.y, pointSize, 0, 2 * Math.PI);
+  ctx.arc(intersection.point.x, intersection.point.y, pointSize, 0, 2 * Math.PI);
   ctx.fillStyle = pointColor;
   ctx.fill();
   ctx.closePath();
@@ -441,8 +452,19 @@ function removeEvents(lineBefore, lineAfter) {
 }
 
 function writeIntersections() {
-  const element = document.getElementById("result");
-  element.innerText = Array.from(intersections).join(' ');
+  const parent = document.getElementById("result");
+  parent.innerHTML = '';
+
+  for (let intersection of intersections) {
+    // Create a new span element
+    const newSpan = document.createElement('span');
+    // Change the color of the text
+    newSpan.style.color = intersection.color; // You can use a function like getRandomColor() from the previous example
+    // Add text content
+    newSpan.textContent = intersection.point;
+    // Append the new span to another HTML node
+    parent.appendChild(newSpan);
+  }
 }
 
 async function runAlgorithm() {
@@ -451,6 +473,7 @@ async function runAlgorithm() {
   resumeButton.disabled = true;
   stepButton.disabled = true;
   pauseButton.disabled = false;
+  randomButton.disabled = true;
 
   restartAlgoClear();
   drawLines();
@@ -541,7 +564,7 @@ async function runAlgorithm() {
       deleteLine(line)
     } else {
       await switchActiveLine("if-intersect");
-      intersections.add(point);
+      intersections.add(new Intersection(point, getRandomColor()));
       writeIntersections();
       const [line1, line2] = line;
       const lower = findLine(line1);
@@ -595,7 +618,83 @@ async function runAlgorithm() {
   pauseButton.disabled = true;
   resumeButton.disabled = true;
   stepButton.disabled = true;
+  randomButton.disabled = false;
 }
+
+function getRandomInt(min, max) {
+  // Using Math.floor() to ensure the result is an integer
+  // The formula generates a random number in the range [min, max + 1)
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomInitialize() {
+  let inputElement = document.getElementById("lines-input");
+  // Get the value from the input and convert it to an integer
+  const inputValue = parseInt(inputElement.value);
+
+  // Check if the conversion was successful
+  let counter;
+  if (!isNaN(inputValue)) {
+    if (inputValue > 15) {
+      alert('Maximum number of lines is restricted to 15.');
+    } else {
+      clearCanvas();
+      lines = [];
+      const minX = rect.left + 1 - rect.left;
+      const maxX = rect.right - 1 - rect.left;
+      const minY = rect.top + 1 - rect.top;
+      const maxY = rect.bottom - 1 - rect.top;
+
+      counter = 0;
+      while (counter < inputValue) {
+        const p1 = new Point(getRandomInt(minX, maxX), getRandomInt(minY, maxY));
+        const p2 = new Point(getRandomInt(minX, maxX), getRandomInt(minY, maxY));
+        if (p1.x !== p2.x && p1.y !== p2.y) {
+          if (p1.x < p2.x) {
+            lines.push(new LineSegment(p1, p2));
+          } else {
+            lines.push(new LineSegment(p2, p1));
+          }
+          counter++;
+        }
+      }
+      console.log(lines);
+      drawLines();
+      runButton.disabled = false;
+    }
+  } else {
+    alert('Invalid input. Please enter a valid integer.');
+  }
+}
+
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color;
+  do {
+    color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+  } while (getColorLightness(color) > 95);
+  return color;
+}
+
+function getColorLightness(hexColor) {
+  const rgb = hexToRgb(hexColor);
+  const max = Math.max(rgb.r, rgb.g, rgb.b);
+  const min = Math.min(rgb.r, rgb.g, rgb.b);
+  return (max + min) / 2;
+}
+
+function hexToRgb(hexColor) {
+  const hex = hexColor.slice(1);
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return { r, g, b };
+}
+
 
 
 
