@@ -68,9 +68,28 @@
     </div>
 </div>
 <div class="wrapper col-md-12" style="margin-top: 10px;">
-    <p id="result" class="col-md-7"></p>
-    <button style="float: right; margin-left: 10px" class="btn btn-primary" id="clear-button" onclick="clearData()">Clear</button>
-    <button style="float: right;" class="btn btn-primary" id="run-button" onclick="runAlgorithm()">Execute</button>
+    <div class="row col-md-7">
+        <button class="btn btn-primary col-md-2" id="run-button" onclick="runAlgorithm()">Execute</button>
+        <button style="margin-left: 10px" class="btn btn-primary col-md-2" id="step-button" onclick="stepExecution()">Step</button>
+        <button style="margin-left: 10px" class="btn btn-primary col-md-2" id="pause-button" onclick="pauseExecution()">Pause</button>
+        <button style="margin-left: 10px" class="btn btn-primary col-md-2" id="resume-button" onclick="resumeExecution()">Resume</button>
+        <button style="margin-left: 10px" class="btn btn-primary col-md-2" id="clear-button" onclick="clearData()">Clear</button>
+    </div>
+    <div class="container col-md-5" style="margin-left: 30px">
+        <div class="row">
+            <div class="col-md-6">
+                <input type="number" class="form-control" placeholder="Enter number of Lines">
+            </div>
+            <div class="col-md-6">
+                <button class="btn btn-primary" id="random-button" onclick="randomInitialize()">Randomize</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="wrapper col-md-12" style="margin-top: 10px;">
+    <p id="result" class="col-md-6"></p>
+    <p id="event" class="col-md-6"></p>
 </div>
 </body>
 <!--   core js files    -->
