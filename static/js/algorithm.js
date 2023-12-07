@@ -542,7 +542,7 @@ function writeEvents() {
       firstDone = true;
     }
     // Add text content
-    newP.textContent = priority + " ---> " + event + " : " + point + " : " + line;
+    newP.textContent = priority + " \u2192 " + event + " : " + point + " : " + line;
     // Append the new span to another HTML node
     eventHtml.appendChild(newP);
   }
