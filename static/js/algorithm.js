@@ -4,6 +4,9 @@ const pauseButton = document.getElementById("pause-button");
 const resumeButton = document.getElementById("resume-button");
 const stepButton = document.getElementById("step-button");
 const randomButton = document.getElementById("random-button");
+const intersectionHtml = document.getElementById("result");
+const eventHtml = document.getElementById("event");
+const statusHtml = document.getElementById("status");
 let currentlyActiveLine = "";
 let isAnimating = false;
 let currentEventPoint = null;
@@ -13,6 +16,24 @@ const PauseStatus = {
   STEP: 'step',
 };
 let pauseStatus = PauseStatus.RESUME;
+
+function drawCanvasCoordinates() {
+  const canvas = document.getElementById('canvas');
+  const context = canvas.getContext('2d');
+
+  // Function to draw text at specified coordinates
+  function drawText(x, y, text) {
+    context.font = '12px Arial';
+    context.fillStyle = "black";
+    context.fillText(text, x, y);
+  }
+
+  // Draw the four corner coordinates
+  drawText(10, 20, 'Top Left (0, 0)');
+  drawText(canvas.width - 110, 20, `Top Right (${canvas.width}, 0)`);
+  drawText(10, canvas.height - 10, `Bottom Left (0, ${canvas.height - 10})`);
+  drawText(canvas.width - 140, canvas.height - 10, `Bottom Right (${canvas.width}, ${canvas.height})`);
+}
 
 async function switchActiveLine(next) {
   function removeClass() {
@@ -113,6 +134,10 @@ class LineSegment {
     this.start = start;
     this.end = end;
   }
+
+  toString() {
+    return `[Start: ${this.start}, End: ${this.end}]`;
+  }
 }
 
 class Intersection {
@@ -207,6 +232,7 @@ function drawLines() {
 
 function clearCanvas() {
   ctx.clearRect(0, 0, rect.width, rect.height);
+  drawCanvasCoordinates();
 }
 
 function startDragLine() {
@@ -241,6 +267,7 @@ function stopDragLine(e) {
     }
     clearInterval(intervalLoop);
     clearCanvas();
+    intersections.forEach(drawPoint);
     drawLines();
   }
 }
@@ -277,9 +304,13 @@ function init() {
   };
   canvas.addEventListener('mousedown', startDragLine, false);
   window.addEventListener('mouseup', stopDragLine, false);
+  drawCanvasCoordinates();
 }
 
 function clearData() {
+  intersectionHtml.style.visibility = "hidden";
+  eventHtml.style.visibility = "hidden";
+  statusHtml.style.visibility = "hidden";
   runButton.disabled = true;
   lines = [];
   restartAlgoClear();
@@ -341,12 +372,14 @@ class PriorityQueue {
   enqueue(element, priority) {
     this.elements.push({element, priority});
     this.elements.sort((a, b) => a.priority - b.priority);
+    writeEvents();
   }
 
   dequeue() {
     if (this.isEmpty()) {
       return null;
     }
+    writeEvents();
     return this.elements.shift();
   }
 
@@ -452,18 +485,66 @@ function removeEvents(lineBefore, lineAfter) {
 }
 
 function writeIntersections() {
-  const parent = document.getElementById("result");
-  parent.innerHTML = '';
-
-  for (let intersection of intersections) {
+  intersectionHtml.innerHTML = '';
+  for (const intersection of intersections) {
     // Create a new span element
     const newSpan = document.createElement('span');
     // Change the color of the text
     newSpan.style.color = intersection.color; // You can use a function like getRandomColor() from the previous example
     // Add text content
-    newSpan.textContent = intersection.point;
+    newSpan.textContent = intersection.point + "  ";
     // Append the new span to another HTML node
-    parent.appendChild(newSpan);
+    intersectionHtml.appendChild(newSpan);
+  }
+  if (intersections.size > 0) {
+    intersectionHtml.style.visibility = "visible";
+    intersectionHtml.scrollTop = intersectionHtml.scrollHeight;
+  }
+}
+
+function writeStatus() {
+  statusHtml.innerHTML = '';
+
+  if (status.length > 0) {
+    statusHtml.style.visibility = "visible";
+  } else {
+    statusHtml.style.visibility = "hidden";
+  }
+  for (const entry of status) {
+    // Create a new span element
+    const newP = document.createElement('p');
+    // Add text content
+    newP.textContent = entry[1] + "  ";
+    // Append the new span to another HTML node
+    statusHtml.appendChild(newP);
+    console.log("I am here");
+  }
+}
+
+function writeEvents() {
+  eventHtml.innerHTML = '';
+
+  if (!eventQueue.isEmpty()) {
+    eventHtml.style.visibility = "visible";
+  } else {
+    eventHtml.style.visibility = "hidden";
+  }
+  let firstDone = false;
+  for (const theEvent of eventQueue.elements) {
+    const {element, priority} = theEvent;
+    const {point, line, event} = element;
+
+    // Create a new span element
+    const newP = document.createElement('p');
+    if (!firstDone) {
+      // Change the color of the text
+      newP.style.backgroundColor = "rgba(60,181,64,0.5)"; // You can use a function like getRandomColor() from the previous example
+      firstDone = true;
+    }
+    // Add text content
+    newP.textContent = priority + " ---> " + event + " : " + point + " : " + line;
+    // Append the new span to another HTML node
+    eventHtml.appendChild(newP);
   }
 }
 
@@ -474,6 +555,9 @@ async function runAlgorithm() {
   stepButton.disabled = true;
   pauseButton.disabled = false;
   randomButton.disabled = true;
+  intersectionHtml.style.visibility = "hidden";
+  eventHtml.style.visibility = "hidden";
+  statusHtml.style.visibility = "hidden";
 
   restartAlgoClear();
   drawLines();
@@ -512,6 +596,7 @@ async function runAlgorithm() {
       await switchActiveLine("if-start");
       await switchActiveLine("insert-line");
       await addLineToStatus(line, point.x);
+      writeStatus();
       const idx = findLine(line);
       if (idx > 0 && idx < (status.length - 1)) {
         await switchActiveLine("find-above-below");
@@ -562,6 +647,7 @@ async function runAlgorithm() {
       }
       await switchActiveLine("remove-line");
       deleteLine(line)
+      writeStatus();
     } else {
       await switchActiveLine("if-intersect");
       intersections.add(new Intersection(point, getRandomColor()));
@@ -585,6 +671,7 @@ async function runAlgorithm() {
         removeEvents(lineHigher, lineAfterHigher);
       }
       swap(lower, higher);
+      writeStatus();
       await switchActiveLine("intersect-new-event");
       if (lower > 0) {
         const line = status [lower][1];
@@ -613,12 +700,16 @@ async function runAlgorithm() {
     }
   }
   await switchActiveLine("");
+  currentEventPoint = null;
+  await drawSweepLine(currentPriority, currentPriority);
+
   runButton.disabled = false;
   clearButton.disabled = false;
   pauseButton.disabled = true;
   resumeButton.disabled = true;
   stepButton.disabled = true;
   randomButton.disabled = false;
+  writeEvents();
 }
 
 function getRandomInt(min, max) {
@@ -635,8 +726,8 @@ function randomInitialize() {
   // Check if the conversion was successful
   let counter;
   if (!isNaN(inputValue)) {
-    if (inputValue > 15) {
-      alert('Maximum number of lines is restricted to 15.');
+    if (inputValue > 20) {
+      alert('Maximum number of lines is restricted to 20.');
     } else {
       clearCanvas();
       lines = [];
@@ -675,7 +766,7 @@ function getRandomColor() {
     for (let i = 0; i < 6; i++) {
       color += letters[Math.floor(Math.random() * 16)];
     }
-  } while (getColorLightness(color) > 95);
+  } while (getColorLightness(color) > 125);
   return color;
 }
 

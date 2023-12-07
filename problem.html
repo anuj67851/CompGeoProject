@@ -27,6 +27,13 @@
             background-color: yellow;
             font-weight: bold;
         }
+
+        #result, #event, #status {
+            font-size: 16px;
+            white-space: pre-wrap;
+            overflow-y: auto; /* Optional: Add vertical scrollbar if needed */
+            max-height: 190px; /* Optional: Set a max height to limit vertical expansion */
+        }
     </style>
 </head>
 <body>
@@ -78,7 +85,7 @@
     <div class="container col-md-5" style="margin-left: 30px">
         <div class="row">
             <div class="col-md-6">
-                <input type="number" id="lines-input" class="form-control" placeholder="Enter number of Lines">
+                <input type="number" id="lines-input" class="form-control" max="20" placeholder="Enter number of Lines (max 20)">
             </div>
             <div class="col-md-6">
                 <button class="btn btn-primary" id="random-button" onclick="randomInitialize()">Randomize</button>
@@ -87,9 +94,29 @@
     </div>
 
 </div>
+<div class="wrapper col-md-12" style="margin-top: -20px">
+    <div class="col-md-7">
+        Event Queue
+    </div>
+    <div class="col-md-3">
+        Status Queue
+    </div>
+    <div class="col-md-2">
+        <span style="margin-left: 100px">
+            Intersections
+        </span>
+    </div>
+</div>
 <div class="wrapper col-md-12" style="margin-top: 10px;">
-    <p id="result" class="col-md-6"></p>
-    <p id="event" class="col-md-6"></p>
+    <div class="col-md-7">
+        <pre id="event" style="visibility: hidden;"></pre>
+    </div>
+    <div class="col-md-3">
+        <pre id="status" style="visibility: hidden;" class="col-md-12"></pre>
+    </div>
+    <div class="col-md-2">
+        <pre id="result" style="visibility: hidden; float: right" class="col-md-8"></pre>
+    </div>
 </div>
 </body>
 <!--   core js files    -->
