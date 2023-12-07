@@ -31,7 +31,7 @@ function drawCanvasCoordinates() {
   // Draw the four corner coordinates
   drawText(10, 20, 'Top Left (0, 0)');
   drawText(canvas.width - 110, 20, `Top Right (${canvas.width}, 0)`);
-  drawText(10, canvas.height - 10, `Bottom Left (0, ${canvas.height - 10})`);
+  drawText(10, canvas.height - 10, `Bottom Left (0, ${canvas.height})`);
   drawText(canvas.width - 140, canvas.height - 10, `Bottom Right (${canvas.width}, ${canvas.height})`);
 }
 
